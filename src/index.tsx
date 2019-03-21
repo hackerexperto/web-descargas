@@ -20,7 +20,21 @@ import {
   DropdownMenu,
   DropdownItem } from 'reactstrap';
 
-class ProgramRow extends React.Component<{name: string}> {
+class ProgramRow extends React.Component<{name: string, link: string}, {first: boolean}> {
+  constructor(props: any) {
+    super(props);
+    this.state = { first: true };
+  }
+
+  links() {
+    const first = this.state.first;   
+    if (first) {
+      window.open(LINK_ANUNCIO);
+      this.setState({ first: !first });
+    }
+    else window.open(this.props.link);           
+  }
+
   render() {
     return (
       <div>
@@ -32,7 +46,7 @@ class ProgramRow extends React.Component<{name: string}> {
               <h5 className="float-left">{this.props.name}</h5>
             </Col> 
             <Col>
-              <Button color="success" className="float-right">Descargar</Button>
+              <Button color="success" className="float-right" onClick={this.links.bind(this)}>Descargar</Button>
             </Col>
           </Row>
           <br/>
@@ -42,15 +56,16 @@ class ProgramRow extends React.Component<{name: string}> {
   }
 }
 
-class ProgramCategoryRow extends Component<{names: any}> {
+class ProgramCategoryRow extends Component<{programs: any}> {
   render() {
     const rows: JSX.Element[] = [];
 
-    this.props.names.forEach((name: string) => {
+    this.props.programs.forEach((program: any) => {
       rows.push(
         <ProgramRow
-          name={name}
-          key={name} />
+          name={program.name}
+          link={program.link}
+          key={program.name} />
       );
     });
 
@@ -87,7 +102,7 @@ class ProgramTable extends React.Component<{programs: any[]}, {collapses: boolea
           </Row>
           <Collapse isOpen={this.state.collapses[i]}>
             <ProgramCategoryRow 
-              names={program.names}
+              programs={program.programs}
               key={program.category} />  
           </Collapse>         
         </div>
@@ -166,19 +181,21 @@ class App extends React.Component {
 // ========================================
 
 const EMULADORES = [
-  'Visual Boy Advance',
-  'Dolphin'
+  {name: 'Visual Boy Advance', link: 'https://www.google.com'},
+  {name: 'Dolphin', link: 'https://www.youtube.com'},
 ];
 
 const PROGRAMACION = [
-  'Visual Studio Code',
-  'NetBeans'
+  {name: 'Visual Studio Code', link: 'https://www.twitter.com'},
+  {name: 'NetBeans', link: 'https://www.facebook.com'},
 ];
 
 const PROGRAMS = [
-  {category: 'Emuladores', names: EMULADORES},
-  {category: 'Programación', names: PROGRAMACION},
+  {category: 'Emuladores', programs: EMULADORES},
+  {category: 'Programación', programs: PROGRAMACION},
 ];
+
+const LINK_ANUNCIO = 'https://www.instagram.com';
 
 ReactDOM.render(
   <App />,
