@@ -6,7 +6,6 @@ import logo from './logo.svg';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 //reactstrap
-//import { Button } from 'reactstrap';
 import { Container, Row, Col } from 'reactstrap'
 import { Collapse, Button, CardBody, Card, CardText, CardColumns, CardTitle } from 'reactstrap';
 import {
