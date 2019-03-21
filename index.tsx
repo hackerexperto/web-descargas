@@ -1,119 +1,164 @@
-import React from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
+import logo from './logo.svg';
 
-function Square(props: any) {
-  return (
-    <button className="square" onClick={props.onClick}>
-      {props.value}
-    </button>
-  );
-}
+//bootstrap
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-class Board extends React.Component<{ squares: any[],  onClick: any}> {
-  renderSquare(i: number) {
-    return (
-      <Square
-        value={this.props.squares[i]}
-        onClick={() => this.props.onClick(i)}
-      />
-    );
-  }
+//reactstrap
+//import { Button } from 'reactstrap';
+import { Container, Row, Col } from 'reactstrap'
+import { Collapse, Button, CardBody, Card, CardText, CardColumns, CardTitle } from 'reactstrap';
+import {
+  Navbar,
+  NavbarToggler,
+  NavbarBrand,
+  Nav,
+  NavItem,
+  NavLink,
+  UncontrolledDropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem } from 'reactstrap';
 
+class ProgramRow extends React.Component<{name: string}> {
   render() {
     return (
       <div>
-        <div className="board-row">
-          {this.renderSquare(0)}
-          {this.renderSquare(1)}
-          {this.renderSquare(2)}
+        <br/>
+        <Col xs={{ size: 10, offset: 1 }} className="border rounded">
+          <br/>
+          <Row className="align-items-center mx-auto">
+            <Col>
+              <h5 className="float-left">{this.props.name}</h5>
+            </Col> 
+            <Col>
+              <Button color="success" className="float-right">Descargar</Button>
+            </Col>
+          </Row>
+          <br/>
+        </Col>
+      </div>    
+    );
+  }
+}
+
+class ProgramCategoryRow extends Component<{names: any}> {
+  render() {
+    const rows: JSX.Element[] = [];
+
+    this.props.names.forEach((name: string) => {
+      rows.push(
+        <ProgramRow
+          name={name}
+          key={name} />
+      );
+    });
+
+    return (
+      rows
+    );
+  }
+}
+
+class ProgramTable extends React.Component<{programs: any[]}, {collapses: boolean[]}> {
+  constructor(props: any) {
+    super(props);
+    this.state = { collapses: new Array(props.programs.length).fill(true) };
+  }
+
+  toggle(i: number) {
+    const collapses = this.state.collapses.slice();
+    collapses[i] = !collapses[i];
+    this.setState(({ collapses: collapses }));
+  }
+
+  render() {
+    const rows: JSX.Element[] = [];
+    let i: number = 0;
+
+    this.props.programs.forEach((program: any) => {
+      rows.push(
+        <div>
+          <br/>
+          <Row>
+            <Col xs={{ size: 10, offset: 1 }}>
+              <Button color="dark" size="lg" block onClick={this.toggle.bind(this, i)} style={{ marginBottom: '1rem' }}>{program.category}</Button>         
+            </Col>
+          </Row>
+          <Collapse isOpen={this.state.collapses[i]}>
+            <ProgramCategoryRow 
+              names={program.names}
+              key={program.category} />  
+          </Collapse>         
         </div>
-        <div className="board-row">
-          {this.renderSquare(3)}
-          {this.renderSquare(4)}
-          {this.renderSquare(5)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(6)}
-          {this.renderSquare(7)}
-          {this.renderSquare(8)}
-        </div>
+      );
+      ++i;
+    });
+
+    return (
+      rows
+    );
+  }
+}
+
+class Barra extends React.Component<{}, {isOpen: boolean}> {
+  constructor(props: any) {
+    super(props);
+
+    this.toggle = this.toggle.bind(this);
+    this.state = {
+      isOpen: false
+    };
+  }
+  toggle() {
+    this.setState({
+      isOpen: !this.state.isOpen
+    });
+  }
+  render() {
+    return (
+      <div>
+        <Navbar color="dark" dark expand="md">
+          <NavbarBrand href="/">PROGRAMAS GRATIS</NavbarBrand>
+          <NavbarToggler onClick={this.toggle} />
+          <Collapse isOpen={this.state.isOpen} navbar>
+            <Nav className="ml-auto" navbar>
+              <UncontrolledDropdown nav inNavbar>
+                <DropdownToggle nav caret>
+                  Categoria
+                </DropdownToggle>
+                <DropdownMenu right>
+                  <DropdownItem>
+                    Categoria 1
+                  </DropdownItem>
+                  <DropdownItem>
+                    Categoria 2
+                  </DropdownItem>
+                </DropdownMenu>
+              </UncontrolledDropdown>
+            </Nav>
+          </Collapse>
+        </Navbar>
       </div>
     );
   }
 }
 
-class Game extends React.Component<{}, { history: any[], stepNumber: number, xIsNext: boolean }> {
-  constructor(props: any) {
-    super(props);
-    this.state = {
-      history: [{
-        squares: Array(9).fill(null)
-      }],
-      stepNumber: 0,
-      xIsNext: true
-    };
-  }
-
-  handleClick(i: number) {
-    const history = this.state.history.slice(0, this.state.stepNumber + 1);
-    const current = history[history.length - 1];
-    const squares = current.squares.slice();
-    if (calculateWinner(squares) || squares[i]) {
-      return;
-    }
-    squares[i] = this.state.xIsNext ? 'X' : 'O';
-    this.setState({
-      history: history.concat([{
-        squares: squares
-      }]),
-      stepNumber: history.length,
-      xIsNext: !this.state.xIsNext,
-    });
-  }
-
-  jumpTo(step: number) {
-    this.setState({
-      stepNumber: step,
-      xIsNext: (step % 2) === 0,
-    });
-  }
-
+class App extends React.Component {
   render() {
-    const history = this.state.history;
-    const current = history[this.state.stepNumber];
-    const winner = calculateWinner(current.squares);
-
-    const moves = history.map((step, move) => {
-      const desc = move ?
-        'Go to move #' + move :
-        'Go to game start';
-      return (
-        <li key={move}>
-          <button onClick={() => this.jumpTo(move)}>{desc}</button>
-        </li>
-      );
-    });
-
-    let status: string;
-    if (winner) {
-      status = 'Winner: ' + winner;
-    } else {
-      status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
-    }
-
     return (
-      <div className="game">
-        <div className="game-board">
-          <Board
-            squares={current.squares}
-            onClick={(i: number) => this.handleClick(i)}
-          />
-        </div>
-        <div className="game-info">
-          <div>{status}</div>
-          <ol>{moves}</ol>
-        </div>
+      <div className="App">
+        <header className="App-header">
+          {/*<img src={logo} className="App-logo" alt="logo" />*/}
+          {/*<h1> PROGRAMAS GRATIS </h1>*/}
+          <Container>
+            <Row>              
+              <Col xs={{ size: 10, offset: 1 }}> <Barra /> </Col>
+            </Row>
+            <ProgramTable programs={PROGRAMS}/>
+          </Container>         
+        </header>
       </div>
     );
   }
@@ -121,27 +166,22 @@ class Game extends React.Component<{}, { history: any[], stepNumber: number, xIs
 
 // ========================================
 
+const EMULADORES = [
+  'Visual Boy Advance',
+  'Dolphin'
+];
+
+const PROGRAMACION = [
+  'Visual Studio Code',
+  'NetBeans'
+];
+
+const PROGRAMS = [
+  {category: 'Emuladores', names: EMULADORES},
+  {category: 'Programación', names: PROGRAMACION},
+];
+
 ReactDOM.render(
-  <Game />,
+  <App />,
   document.getElementById('root')
 );
-
-function calculateWinner(squares: any[]) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
-    }
-  }
-  return null;
-}
